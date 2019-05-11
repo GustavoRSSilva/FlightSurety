@@ -39,7 +39,7 @@ contract FlightSuretyData {
                                 public
     {
         contractOwner = msg.sender;
-        this.registerAirline(msg.sender, true);
+        this.registerAirline(msg.sender);
     }
 
     /********************************************************************************************/
@@ -139,51 +139,47 @@ contract FlightSuretyData {
                             requireContractOwner
     {
         require(!isAirlineRegistered(airline), "Airline is already registered");
+        //only existing airlines may register a new airline until four are registered
+        require(airlines[msg.sender].isRegistered, "Airlines must be registered prior to 4 registered airlines");
 
-        if (votesNeeded <= 4) { //only existing airlines may register a new airline until four are registered
-            require(airlines[msg.sender].isRegistered, "Airlines must be registered prior to 4 registered airlines");
-        
+        //any airline can be added up until there are four, just so long as the caller is already registered
+        if (airlineCount <= 4) {
+    
             airlines[airline] = Airline({
                                     isRegistered: true
                                 });
             airlineCount ++;
-            votesNeeded = SafeMath.div(airlineCount, 2);
-        } else {
-            //After four 50% consensys is required from registered airlines
+        } else { //After four 50% consensys is required from registered airlines
+            bool isDuplicate = false;
+    
+            for(uint i = 0; i < approvalVotes.length; i++) {
+                //check for duplicates to add to list of approvers
+                if(approvalVotes[i] == msg.sender) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            require(!isDuplicate, "Caller has already called this function");
 
             //until we reach the amount needed for consensys we just add the address to our list of approval voters
             //multiple address are required to call this contract
             if(approvalVotes.length < votesNeeded) {
 
-                bool isDuplicate = false;
-            
-                for(uint i = 0; i < approvalVotes.length; i++) {
-                    //check for duplicates to add to list of approvers
-                    if(approvalVotes[i] == msg.sender) {
-                        isDuplicate = true;
-                        break;
-                    }
-                }
-                require(!isDuplicate, "Caller has already called this function");
-
                 approvalVotes.push(msg.sender);
 
             } else { //we have enough votes let's add it to the airlines mapping
 
-                //we need to clear approval votes
-            }
+                airlines[airline] = Airline({
+                                    isRegistered: true
+                                });
+                airlineCount ++;
 
-            //we may need to move this, set only if 50% consensys
-            votesNeeded = SafeMath.div(votesNeeded, 2);
+                //we need to recalculate and reset votes
+                votesNeeded = SafeMath.div(airlineCount, 2);
+                delete approvalVotes;
+            }
         }
     }
-
-    function addAirlineToMapping(
-
-                            ) private {
-
-    }
-
 
    /**
     * @dev Buy insurance for a flight
@@ -243,7 +239,7 @@ contract FlightSuretyData {
                         )
                         pure
                         internal
-                        returns(bytes32) 
+                        returns(bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
