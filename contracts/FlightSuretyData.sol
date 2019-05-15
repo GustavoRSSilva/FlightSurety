@@ -8,6 +8,7 @@ contract FlightSuretyData {
 
     struct Airline {
         bool isRegistered;
+        bool hasFunded;
     }
 
     /********************************************************************************************/
@@ -40,6 +41,7 @@ contract FlightSuretyData {
     {
         contractOwner = msg.sender;
         this.registerAirline(msg.sender);
+        this.fund();
     }
 
     /********************************************************************************************/
@@ -145,21 +147,20 @@ contract FlightSuretyData {
         //any airline can be added up until there are four, just so long as the caller is already registered
         if (airlineCount <= 4) {
     
-            airlines[airline] = Airline({
-                                    isRegistered: true
-                                });
-            airlineCount ++;
+            reallyRegisterAirline(airline);
         } else { //After four 50% consensys is required from registered airlines
-            bool isDuplicate = false;
+            bool cannotVote = false;
     
-            for(uint i = 0; i < approvalVotes.length; i++) {
-                //check for duplicates to add to list of approvers
-                if(approvalVotes[i] == msg.sender) {
-                    isDuplicate = true;
-                    break;
+            if(airlines[msg.sender].isRegistered != true) { //user has not funded the contract
+                for(uint i = 0; i < approvalVotes.length; i++) {
+                    //check for duplicate votes
+                    if(approvalVotes[i] == msg.sender) {
+                        cannotVote = true;
+                        break;
+                    }
                 }
             }
-            require(!isDuplicate, "Caller has already called this function");
+            require(!cannotVote, "Caller is duplicate or has not funded");
 
             //until we reach the amount needed for consensys we just add the address to our list of approval voters
             //multiple address are required to call this contract
@@ -168,11 +169,7 @@ contract FlightSuretyData {
                 approvalVotes.push(msg.sender);
 
             } else { //we have enough votes let's add it to the airlines mapping
-
-                airlines[airline] = Airline({
-                                    isRegistered: true
-                                });
-                airlineCount ++;
+                reallyRegisterAirline(airline);
 
                 //we need to recalculate and reset votes
                 votesNeeded = SafeMath.div(airlineCount, 2);
@@ -180,6 +177,15 @@ contract FlightSuretyData {
             }
         }
     }
+
+    function reallyRegisterAirline(address airline) private {
+        airlines[airline] = Airline({
+                                    isRegistered: true,
+                                    isFunded: false
+                                });
+        airlineCount ++;
+    }
+
 
    /**
     * @dev Buy insurance for a flight
@@ -224,11 +230,13 @@ contract FlightSuretyData {
     *
     */   
     function fund
-                            (   
+                            (
                             )
                             public
                             payable
     {
+        require(msg.value > 10 ether, "Caller has not sent enough funds to register");
+        address(this).transfer(10 ether);
     }
 
     function getFlightKey
@@ -239,7 +247,7 @@ contract FlightSuretyData {
                         )
                         pure
                         internal
-                        returns(bytes32)
+                        returns(bytes32) 
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
@@ -248,9 +256,9 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    function() 
-                            external 
-                            payable 
+    function()
+                            external
+                            payable
     {
         fund();
     }
