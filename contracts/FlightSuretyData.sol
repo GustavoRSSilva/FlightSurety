@@ -148,6 +148,7 @@ contract FlightSuretyData {
         if (airlineCount <= 4) {
     
             reallyRegisterAirline(airline);
+            fund();
         } else { //After four 50% consensys is required from registered airlines
             bool cannotVote = false;
     
@@ -170,6 +171,7 @@ contract FlightSuretyData {
 
             } else { //we have enough votes let's add it to the airlines mapping
                 reallyRegisterAirline(airline);
+                fund();
 
                 //we need to recalculate and reset votes
                 votesNeeded = SafeMath.div(airlineCount, 2);
@@ -181,7 +183,7 @@ contract FlightSuretyData {
     function reallyRegisterAirline(address airline) private {
         airlines[airline] = Airline({
                                     isRegistered: true,
-                                    isFunded: false
+                                    hasFunded: false
                                 });
         airlineCount ++;
     }
@@ -210,7 +212,7 @@ contract FlightSuretyData {
                                 pure
     {
     }
-    
+
 
     /**
      *  @dev Transfers eligible payout funds to insuree
@@ -228,7 +230,10 @@ contract FlightSuretyData {
     * @dev Initial funding for the insurance. Unless there are too many delayed flights
     *      resulting in insurance payouts, the contract should be self-sustaining
     *
-    */   
+    */
+
+    //this may cause problems because any contract that is registered HAS to fund
+
     function fund
                             (
                             )
@@ -237,6 +242,8 @@ contract FlightSuretyData {
     {
         require(msg.value > 10 ether, "Caller has not sent enough funds to register");
         address(this).transfer(10 ether);
+
+        airlines[msg.sender].hasFunded = true;
     }
 
     function getFlightKey
