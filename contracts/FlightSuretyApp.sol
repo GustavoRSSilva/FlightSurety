@@ -9,8 +9,16 @@ import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
 /************************************************** */
 /* FlightSurety Smart Contract                      */
 /************************************************** */
-contract FlightSuretyApp {
+contract FlightSuretyApp  { // this is the crucial change
+
     using SafeMath for uint256; // Allow SafeMath functions to be called for all uint256 types (similar to "prototype" in Javascript)
+
+    struct Flight {
+            bool isRegistered;
+            uint8 statusCode;
+            uint256 updatedTimestamp;
+            address airline;
+    }
 
     /********************************************************************************************/
     /*                                       DATA VARIABLES                                     */
@@ -25,16 +33,8 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
     address private contractOwner;          // Account used to deploy contract
-
-    struct Flight {
-        bool isRegistered;
-        uint8 statusCode;
-        uint256 updatedTimestamp;        
-        address airline;
-    }
     mapping(bytes32 => Flight) private flights;
 
- 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
@@ -44,13 +44,13 @@ contract FlightSuretyApp {
 
     /**
     * @dev Modifier that requires the "operational" boolean variable to be "true"
-    *      This is used on all state changing functions to pause the contract in 
+    *      This is used on all state changing functions to pause the contract in
     *      the event there is an issue that needs to be fixed
     */
-    modifier requireIsOperational() 
+    modifier requireIsOperational()
     {
          // Modify to call data contract's status
-        require(true, "Contract is currently not operational");  
+        require(true, "Contract is currently not operational");
         _;  // All modifiers require an "_" which indicates where the function body will be added
     }
 
@@ -73,8 +73,8 @@ contract FlightSuretyApp {
     */
     constructor
                                 (
-                                ) 
-                                public 
+                                )
+                                public
     {
         contractOwner = msg.sender;
     }
@@ -83,10 +83,10 @@ contract FlightSuretyApp {
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
 
-    function isOperational() 
-                            public 
-                            pure 
-                            returns(bool) 
+    function isOperational()
+                            public
+                            pure
+                            returns(bool)
     {
         return true;  // Modify to call data contract's status
     }
@@ -101,7 +101,7 @@ contract FlightSuretyApp {
     *
     */   
     function registerAirline
-                            (   
+                            (
                             )
                             external
                             pure
@@ -145,8 +145,8 @@ contract FlightSuretyApp {
     function fetchFlightStatus
                         (
                             address airline,
-                            string flight,
-                            uint256 timestamp                            
+                            string calldata flight,
+                            uint256 timestamp
                         )
                         external
     {
@@ -160,7 +160,7 @@ contract FlightSuretyApp {
                                             });
 
         emit OracleRequest(index, airline, flight, timestamp);
-    } 
+    }
 
 
 // region ORACLE MANAGEMENT
