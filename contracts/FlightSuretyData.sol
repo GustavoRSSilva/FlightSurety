@@ -141,17 +141,17 @@ contract FlightSuretyData {
                             requireContractOwner
     {
         require(!isAirlineRegistered(airline), "Airline is already registered");
-        //only existing airlines may register a new airline until four are registered
-        require(airlines[msg.sender].isRegistered, "Airlines must be registered prior to 4 registered airlines");
 
         //any airline can be added up until there are four, just so long as the caller is already registered
         if (airlineCount <= 4) {
-    
+            //only existing airlines may register a new airline until four are registered
+            require(airlines[msg.sender].isRegistered, "Airlines must be registered prior to 4 registered airlines");
+
             reallyRegisterAirline(airline);
             fund();
         } else { //After four 50% consensys is required from registered airlines
             bool cannotVote = false;
-    
+
             if(airlines[msg.sender].isRegistered != true) { //user has not funded the contract
                 for(uint i = 0; i < approvalVotes.length; i++) {
                     //check for duplicate votes
