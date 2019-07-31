@@ -1,6 +1,6 @@
-pragma solidity >= 0.4.25;
+pragma solidity >=0.4.22 <0.6.0;
 
-import "../node_modules/zeppelin-solidity/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract FlightSuretyData {
 
@@ -254,7 +254,7 @@ contract FlightSuretyData {
                         )
                         pure
                         internal
-                        returns(bytes32) 
+                        returns(bytes32)
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
@@ -272,4 +272,3 @@ contract FlightSuretyData {
 
 
 }
-
