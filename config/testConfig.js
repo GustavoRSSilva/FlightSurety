@@ -8,34 +8,38 @@ var Config = async function(accounts) {
     // These test addresses are useful when you need to add
     // multiple users in test scripts
     let testAddresses = [
-        "0x69e1CB5cFcA8A311586e3406ed0301C06fb839a2",
-        "0xF014343BDFFbED8660A9d8721deC985126f189F3",
-        "0x0E79EDbD6A727CfeE09A2b1d0A59F7752d5bf7C9",
-        "0x9bC1169Ca09555bf2721A5C9eC6D69c8073bfeB4",
-        "0xa23eAEf02F9E0338EEcDa8Fdd0A73aDD781b2A86",
-        "0x6b85cc8f612d5457d49775439335f83e12b8cfde",
-        "0xcbd22ff1ded1423fbc24a7af2148745878800024",
-        "0xc257274276a4e539741ca11b590b9447b26a8051",
-        "0x2f2899d6d35b1a48a4fbdc93a37a72f264a9fca7"
+        "0xffcf8fdee72ac11b5c542428b35eef5769c409f0",
+        "0x22d491bde2303f2f43325b2108d26f1eaba1e32b",
+        "0xe11ba2b4d45eaed5996cd0823791e0c93114882d",
+        "0xd03ea8624c8c5987235048901fb614fdca89b117",
+        "0x95ced938f7991cd0dfcb48f0a06a40fa1af46ebc",
+        "0x3e5e9111ae8eb78fe1cc3bb8915d5d461f3ef9a9",
+        "0x28a8746e75304c0780e011bed21c72cd78cd535e",
+        "0xaca94ef8bd5ffee41947b4585a84bda5a3d3da6e",
+        "0x1df62f291b2e969fb0849d99d9ce41e2f137006e"
     ];
-
 
     let owner = accounts[0];
     let firstAirline = accounts[1];
+    // An account that never should be an Airline in all blockchain history
+    // If that happen, restart de blockchain
+    let neverAirline = accounts[accounts.length-3];
+    let aNeverFunded = accounts[accounts.length-4];
 
-    let flightSuretyData = await FlightSuretyData.new();
-    let flightSuretyApp = await FlightSuretyApp.new();
+    let flightSuretyData = await FlightSuretyData.deployed().then(instance => {return instance});
+    let flightSuretyApp = await FlightSuretyApp.deployed().then(instance => {return instance});
 
-    
     return {
         owner: owner,
         firstAirline: firstAirline,
         weiMultiple: (new BigNumber(10)).pow(18),
+        fundingValue: (new BigNumber(10)).pow(18),
         testAddresses: testAddresses,
         flightSuretyData: flightSuretyData,
-        flightSuretyApp: flightSuretyApp
+        flightSuretyApp: flightSuretyApp,
+        neverAirline: neverAirline
     }
-}
+};
 
 module.exports = {
     Config: Config

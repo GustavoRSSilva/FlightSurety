@@ -1,52 +1,6 @@
 # FlightSurety
 
-<table>
-<tr><td>Business Logic</td><td>Flight delay insurance for passengers</td></tr>
-<tr><td>Multi-party</td><td>Managed as a collaboration between airlines</td></tr>
-<tr><td>Payable</td><td>Passengers purchase insurance prior to flight</td></tr>
-<tr><td>Payout</td><td>If the flight is delayed due to an airline fault they get 1.5X what they paid for insurance</td></tr>
-<tr><td>Oracles</td><td>Provide flight status information from multiple APIs</td></tr>
-</table>
-
-### Project Requirements
-<tr><td></td><td></td></tr>
-<table>
-  <tr><td>Separation of Concerns</td>
-    <td>      
-      <li>`FlightSuretyData` contract for persistence</li>
-      <li>`FlightSuretyApp` for app logic and oracles</li>
-      <li>Dapp client for triggering oracle calls</li>
-      <li>Server app for simulating oracles</li>
-    </td></tr>
-  <tr><td>Airlines</td>
-    <td>
-      <li>Register first airline when contract is deployed</li>
-      <li>Only existing airline may register a new airline up to four</li>
-      <li>Registration of fifth and subsequent airlines require at least 50% consensus from registered airlines</li>
-      <li>Airline can be registered, but does not participate until it submits 10 ether in funding</li>
-    </td></tr>
-  <tr><td>Passengers</td>
-    <td>
-      <li>Passengers may pay up to 1 Ether to purchase insurance</li>
-      <li>Flight numbers and timestamps are fixed for the purpose of the project and can be defined in the Dapp client</li>
-      <li>If the flight is delayed due to airline fault, passenger receives credit for 1.5X the amount they paid</li>
-      <li>Funds are transfered from contract to the passenger wallet only when they initiate a withdraw</li>
-    </td></tr>
-  <tr><td>Oracles</td>
-    <td>
-      <li>Oracles are implemented as a server app in node.js</li>
-      <li>Upon startup, 20+ oracles are registered and their assigned indexes are persisted in memory</li>
-      <li>Client dapp is used to trigger request to update flight status generating `OracleRequest` event that is captured by server</li>
-      <li>Server will loop through all registered oracles, identify the oracles for which the request applies, and respond by calling into app logic contract with the appropriate status code.</li>
-    </td></tr>
-  <tr><td>General</td>
-    <td>
-      <li>Contracts must have operational status control</li>
-      <li>Functions must fail fast. use `require()` at the start of functions</li>
-      <li>Scaffolding is require but feel free to replace it with your own</li>
-      <li>Have Fun</li>
-    </td></tr>
-</table>  
+FlightSurety is a sample application project for Udacity's Blockchain course.
 
 ## Install
 
@@ -56,6 +10,10 @@ To install, download or clone the repo, then:
 
 `npm install`
 `truffle compile`
+
+## Ganache
+Run the Ganhache UI or the CLI in port 7545:
+`ganache-cli -l 999999999999 -d -a 50 -e 1000 -m "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat" -p 7545`
 
 ## Develop Client
 
