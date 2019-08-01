@@ -5,13 +5,19 @@ pragma solidity ^0.4.24;
 // More info: https://www.nccgroup.trust/us/about-us/newsroom-and-events/blog/2018/november/smart-contract-insecurity-bad-arithmetic/
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./FlightSuretyData.sol";
 
+
+/************************************************** */
+/* FlightSurety Smart Contract                      */
+/************************************************** */
 contract FlightSuretyApp {
     // Allow SafeMath functions to be called for all uint256 types (similar to "prototype" in Javascript)
     using SafeMath for uint256;
-    // Account used to deploy contract
-    address private contractOwner;
 
+    /********************************************************************************************/
+    /*                                       DATA VARIABLES                                     */
+    /********************************************************************************************/
     // Flight status codees
     uint8 private constant STATUS_CODE_UNKNOWN = 0;
     uint8 private constant STATUS_CODE_ON_TIME = 10;
@@ -19,6 +25,9 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
+
+    // Account used to deploy contract
+    address private contractOwner;
 
     // structs
     // Model for responses from oracles
@@ -66,7 +75,9 @@ contract FlightSuretyApp {
         airlineCount = 1; // Owner is an Airline
     }
 
-    // TODO give back airline fund change
+    /********************************************************************************************/
+    /*                                       Events                                   */
+    /********************************************************************************************/
 
     // events
     event AirlineRegistered(address airline, uint256 airlineCount, uint votes);
@@ -86,11 +97,25 @@ contract FlightSuretyApp {
     // they fetch data and submit a response
     event OracleRequest(uint8 index, address airline, string flight, uint256 timestamp);
 
-    // modifiers
+    /********************************************************************************************/
+    /*                                       FUNCTION MODIFIERS                                 */
+    /********************************************************************************************/
+
+    // Modifiers help avoid duplication of code. They are typically used to validate something
+    // before a function is allowed to be executed.
+
+    /**
+    * @dev Modifier that requires the "operational" boolean variable to be "true"
+    *      This is used on all state changing functions to pause the contract in
+    *      the event there is an issue that needs to be fixed
+    */
     modifier requireIsOperational() {
         require(appData.isOperational(), "Contract is currently not operational"); _;
     }
 
+    /**
+    * @dev Modifier that requires the "ContractOwner" account to be the function caller
+    */
     modifier requireContractOwner() {
         require(msg.sender == contractOwner, "Caller is not contract owner"); _;
     }
@@ -122,10 +147,8 @@ contract FlightSuretyApp {
         msg.sender.transfer(amountToReturn);
     }
 
-//region Utils
     function isOperational() public view returns(bool) { return appData.isOperational(); }
 
-    // Returns array of three non-duplicating integers from 0-9
     function generateIndexes(address account) internal returns(uint8[3]) {
         uint8[3] memory indexes;
         indexes[0] = getRandomIndex(account);
@@ -156,9 +179,7 @@ contract FlightSuretyApp {
 
         return random;
     }
-//endregion
 
-//region Airline
     function getAirlineCount() external view returns (uint) { return airlineCount; }
 
     function unregisterAirline(address airline) external requireContractOwner {
@@ -221,9 +242,7 @@ contract FlightSuretyApp {
     function getActiveAirlines() external view returns(address[]) {
         return appData.getActiveAirlines();
     }
-//endregion
 
-//region Flight
     function registerFlight () external pure {}
 
     function processFlightStatus (address airline, string memory flight, uint256 timestamp, uint8 statusCode)
@@ -265,9 +284,6 @@ contract FlightSuretyApp {
     function registerFlight(address airline, string flightId, uint256 timestamp) external {
         appData.registerFlight(airline, flightId, timestamp);
     }
-//endregion
-
-// region ORACLE
 
     // Called by oracle when a response is available to an outstanding request
     // For the response to be accepted, there must be a pending request that is open
@@ -316,24 +332,4 @@ contract FlightSuretyApp {
 
         return oracles[msg.sender].indexes;
     }
-//endregion
-}
-
-contract FlightSuretyData {
-    function isOperational() external view returns(bool); // ok
-    //region Airline
-    function isAirline(address airline) external view returns(bool); // ok
-    function isAirlineRegistered(address airline) external view returns (bool);
-    function registerAirline(address airline) external;
-    function unregisterAirline(address airline) external;
-    function isAirlineFunded(address airline) external view returns (bool);
-    function updateAirlineFundState(address airline, bool newState) external;
-    function fundAirline(address owner) public;
-    function getActiveAirlines() returns(address[]);
-    //endregion
-
-    function buy (address buyer, string flightID) external payable;
-    function flightSuretyInfo(bytes32 key) external view returns(uint256);
-    function creditInsurees(address passenger, string flight) external payable;
-    function registerFlight(address airline, string flightId, uint256 timestamp) external;
 }
