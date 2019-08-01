@@ -35,7 +35,7 @@ import './flightsurety.css';
                 console.log('flight asdfasdfsadf', flight);
                 displayList(flight, DOM.flightSelector)
             });
-            display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
+            display('Operational Status', 'Check if contract is operational', [ { label: 'Status', error: error, value: result} ]);
         });
 
 
@@ -44,14 +44,14 @@ import './flightsurety.css';
         }, function (error, result) {
             if (error) {
                 return console.log(error)
-            } 
-            
+            }
+
             console.log("Flight status info received");
             console.log(result.returnValues);
             let els = document.querySelectorAll(`.${ btoa(result.returnValues.timestamp + result.returnValues.flight)}`);
             console.log(els[els.length - 1]);
             els[els.length - 1].querySelector(".results").innerText = result.returnValues.status === "10" ? "10 - On time" : `${result.returnValues.status} - ${STATUS_CODES.find(code => code.code == result.returnValues.status).label}`;
-            
+
         });
 
 
@@ -87,9 +87,9 @@ import './flightsurety.css';
                 alert(error || result);
             });
         });
-    
+
     });
-    
+
 
 })();
 
